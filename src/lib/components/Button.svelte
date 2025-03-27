@@ -26,6 +26,7 @@
 		outline: none;
 		padding: 0.5rem 1rem;
 		border-radius: 12px;
+		justify-content: center;
 
 		&--primary {
 			background-color: var(--primary);
