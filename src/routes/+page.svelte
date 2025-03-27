@@ -3,40 +3,78 @@
 	import { supabase } from '$lib/supabaseClient';
 
 	interface JournalEntry {
+		id: string;
 		content: string;
 		created_at: string;
 	}
 
 	const MAX_CHARS = 256;
+	const ENTRIES_PER_PAGE = 15;
 
 	let journal_entries: JournalEntry[] = $state([]);
 	let newEntryContent = $state('');
 	let charactersRemaining = $derived(MAX_CHARS - newEntryContent.length);
+	let isLoading = $state(false);
+	let hasMoreEntries = $state(true);
+	let lastCreatedAt = $state<string | null>(null);
 
-	async function fetchJournalEntries() {
-		const { data } = await supabase
-			.from('journal_entries')
-			.select('content, created_at')
-			.order('created_at', { ascending: false });
-		if (data) journal_entries = data;
+	async function fetchJournalEntries(loadMore = false) {
+		if (isLoading) return;
+
+		isLoading = true;
+
+		try {
+			let query = supabase
+				.from('journal_entries')
+				.select('id, content, created_at')
+				.order('created_at', { ascending: false })
+				.limit(ENTRIES_PER_PAGE);
+
+			if (loadMore && lastCreatedAt) {
+				query = query.lt('created_at', lastCreatedAt);
+			}
+
+			const { data, error } = await query;
+
+			if (error) {
+				return;
+			}
+
+			if (data) {
+				if (data.length === 0 || data.length < ENTRIES_PER_PAGE) {
+					hasMoreEntries = false;
+				}
+
+				if (data.length > 0) {
+					lastCreatedAt = data[data.length - 1].created_at;
+				}
+
+				journal_entries = loadMore ? [...journal_entries, ...data] : data;
+			}
+		} finally {
+			isLoading = false;
+		}
 	}
 
-	$effect(() => {
-		fetchJournalEntries();
-	});
+	async function loadMoreEntries() {
+		await fetchJournalEntries(true);
+	}
 
 	async function addJournalEntry() {
 		if (!newEntryContent.trim() || newEntryContent.length > MAX_CHARS) return;
 
-		const { data } = await supabase
+		const { data, error } = await supabase
 			.from('journal_entries')
 			.insert([{ content: newEntryContent }])
 			.select();
 
-		alert('Entry saved successfully!');
-		
+		if (error) {
+			console.error('Error adding entry:', error);
+			return;
+		}
+
 		if (data) {
-			await fetchJournalEntries();
+			journal_entries = [...data, ...journal_entries];
 			newEntryContent = '';
 		}
 	}
@@ -47,6 +85,15 @@
 			newEntryContent = target.value.slice(0, MAX_CHARS);
 		}
 	}
+
+	let initialized = $state(false);
+
+	$effect(() => {
+		if (!initialized) {
+			initialized = true;
+			fetchJournalEntries();
+		}
+	});
 </script>
 
 <h1 class="heading">256 Chara</h1>
@@ -74,12 +121,30 @@
 
 <div class="entries-container">
 	<h2>Latest Entries</h2>
-	{#each journal_entries as entry}
+	{#each journal_entries as entry (entry.id)}
 		<div class="entry">
 			<p class="entry-content">{entry.content}</p>
 			<p class="entry-time">{new Date(entry.created_at).toLocaleString()}</p>
 		</div>
 	{/each}
+
+	{#if isLoading}
+		<div class="loading">Loading entries...</div>
+	{/if}
+
+	{#if hasMoreEntries && !isLoading}
+		<div class="load-more-container">
+			<Button onclick={loadMoreEntries}>Load More</Button>
+		</div>
+	{/if}
+
+	{#if !hasMoreEntries && journal_entries.length > 0}
+		<div class="end-message">You've reached the end</div>
+	{/if}
+
+	{#if journal_entries.length === 0 && !isLoading}
+		<div class="empty-message">No entries yet. Be the first to write something!</div>
+	{/if}
 </div>
 
 <style>
@@ -89,13 +154,15 @@
 		gap: 1rem;
 		width: 600px;
 		margin: 0 auto;
+		padding-bottom: 2rem;
 	}
 
 	.entry {
 		display: flex;
 		gap: 0.25rem;
 		flex-direction: column;
-		border-radius: 4px;
+		padding: 0.5rem;
+		border-left: 3px solid black;
 	}
 
 	.entry-content {
@@ -159,16 +226,18 @@
 			outline: none;
 		}
 	}
+	.loading,
+	.end-message,
+	.empty-message {
+		text-align: center;
+		padding: 1rem;
+		color: #666;
+		font-style: italic;
+	}
 
-	@media only screen and (max-width: 600px) {
-		.heading {
-			width: 100%;
-		}
-		.entry-form {
-			width: 100%;
-		}
-		.entries-container {
-			width: 100%;
-		}
+	.load-more-container {
+		display: flex;
+		justify-content: center;
+		margin-top: 1rem;
 	}
 </style>
