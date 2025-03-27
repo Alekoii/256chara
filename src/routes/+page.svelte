@@ -17,6 +17,7 @@
 	let isLoading = $state(false);
 	let hasMoreEntries = $state(true);
 	let lastCreatedAt = $state<string | null>(null);
+	let isSubmitting = $state(false);
 
 	async function fetchJournalEntries(loadMore = false) {
 		if (isLoading) return;
@@ -63,6 +64,8 @@
 	async function addJournalEntry() {
 		if (!newEntryContent.trim() || newEntryContent.length > MAX_CHARS) return;
 
+		isSubmitting = true;
+
 		const { data, error } = await supabase
 			.from('journal_entries')
 			.insert([{ content: newEntryContent }])
@@ -77,6 +80,7 @@
 			journal_entries = [...data, ...journal_entries];
 			newEntryContent = '';
 		}
+		isSubmitting = false;
 	}
 
 	function handleInput(e: Event) {
@@ -113,9 +117,9 @@
 	</div>
 	<Button
 		onclick={addJournalEntry}
-		disabled={newEntryContent.length === 0 || newEntryContent.length > MAX_CHARS}
+		disabled={newEntryContent.length === 0 || newEntryContent.length > MAX_CHARS || isSubmitting}
 	>
-		Save Entry
+		{isSubmitting ? 'Saving...' : 'Save Entry'}
 	</Button>
 </div>
 
