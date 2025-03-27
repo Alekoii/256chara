@@ -242,7 +242,8 @@
 	}
 	@media only screen and (max-width: 600px) {
 		.entry-form,
-		.entries-container {
+		.entries-container,
+		.heading {
 			width: 100%;
 		}
 	}
