@@ -240,4 +240,10 @@
 		justify-content: center;
 		margin-top: 1rem;
 	}
+	@media only screen and (max-width: 600px) {
+		.entry-form,
+		.entries-container {
+			width: 100%;
+		}
+	}
 </style>
