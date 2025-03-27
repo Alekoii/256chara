@@ -18,6 +18,7 @@
 	let hasMoreEntries = $state(true);
 	let lastCreatedAt = $state<string | null>(null);
 	let isSubmitting = $state(false);
+	let totalEntries = $state<number | null>(null);
 
 	async function fetchJournalEntries(loadMore = false) {
 		if (isLoading) return;
@@ -27,7 +28,7 @@
 		try {
 			let query = supabase
 				.from('journal_entries')
-				.select('id, content, created_at')
+				.select('id, content, created_at', { count: 'exact' })
 				.order('created_at', { ascending: false })
 				.limit(ENTRIES_PER_PAGE);
 
@@ -35,10 +36,14 @@
 				query = query.lt('created_at', lastCreatedAt);
 			}
 
-			const { data, error } = await query;
+			const { data, error, count } = await query;
 
 			if (error) {
 				return;
+			}
+
+			if (!loadMore && count !== null) {
+				totalEntries = count;
 			}
 
 			if (data) {
@@ -130,6 +135,9 @@
 </div>
 
 <div class="entries-container">
+	{#if totalEntries !== null}
+		<p class="total-count">Total Entries: {totalEntries}</p>
+	{/if}
 	<h2>Latest Entries</h2>
 	{#each journal_entries as entry (entry.id)}
 		<div class="entry">
@@ -178,10 +186,16 @@
 	.entry-content {
 		font-size: 14px;
 		overflow-wrap: break-word;
+		text-wrap: balance;
 	}
 
 	.entry-time {
 		font-size: 12px;
+		color: grey;
+	}
+
+	.total-count {
+		font-size: 14px;
 		color: grey;
 	}
 
