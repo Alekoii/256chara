@@ -33,6 +33,8 @@
 			.insert([{ content: newEntryContent }])
 			.select();
 
+		alert('Entry saved successfully!');
+		
 		if (data) {
 			await fetchJournalEntries();
 			newEntryContent = '';
