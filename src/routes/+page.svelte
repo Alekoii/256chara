@@ -101,6 +101,10 @@
 </script>
 
 <h1 class="heading">256 Chara</h1>
+<p class="app-description">
+	Practice writing in the language you're learning. Express yourself in just 256 characters. Short,
+	focused practice builds confidence and fluency!
+</p>
 
 <div class="entry-form">
 	<div class="textarea-container">
@@ -207,6 +211,12 @@
 		font-weight: bold;
 	}
 
+	.app-description {
+		width: 600px;
+		margin: 0 auto;
+		font-size: 14px;
+	}
+
 	p,
 	h2 {
 		margin: 0;
@@ -225,9 +235,11 @@
 		resize: none;
 		width: 100%;
 		box-sizing: border-box;
-
+		border: 1px solid #ccc;
+		font-size: 14px;
+		margin-top: 14px;
 		&:focus {
-			outline: none;
+			outline: 1px solid black;
 		}
 	}
 	.loading,
@@ -247,7 +259,8 @@
 	@media only screen and (max-width: 600px) {
 		.entry-form,
 		.entries-container,
-		.heading {
+		.heading,
+		.app-description {
 			width: 100%;
 		}
 	}
