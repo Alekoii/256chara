@@ -177,6 +177,7 @@
 
 	.entry-content {
 		font-size: 14px;
+		overflow-wrap: break-word;
 	}
 
 	.entry-time {
