@@ -162,11 +162,11 @@
 		.heading {
 			width: 100%;
 		}
-	}
-	.entry-form {
-		width: 100%;
-	}
-	.entries-container {
-		width: 100%;
+		.entry-form {
+			width: 100%;
+		}
+		.entries-container {
+			width: 100%;
+		}
 	}
 </style>
