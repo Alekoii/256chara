@@ -12,7 +12,7 @@
 	let { children, onclick, type, variant = 'primary', disabled, ...props }: ButtonProps = $props();
 </script>
 
-<button {...props} {onclick} {type} class={`btn btn--${variant} ${disabled ? 'btn-disabled' : ''}`}
+<button {...props} {onclick} {type} class={`btn btn--${variant} ${disabled ? 'btn--disabled' : ''}`}
 	>{@render children()}</button
 >
 
@@ -37,6 +37,10 @@
 			background-color: var(--secondary);
 			border: 1px solid var(--primary);
 			color: var(--primary);
+		}
+
+		&--disabled {
+			opacity: 0.5;
 		}
 
 		&:hover {
