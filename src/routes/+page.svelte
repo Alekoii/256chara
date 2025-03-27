@@ -71,6 +71,8 @@
 			.insert([{ content: newEntryContent }])
 			.select();
 
+		alert('Entry added successfully!');
+
 		if (error) {
 			console.error('Error adding entry:', error);
 			return;
